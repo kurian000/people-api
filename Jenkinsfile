@@ -1,8 +1,8 @@
 pipeline {
   agent any
   environment {
-    PROJECT_ID = 'YOUR_PROJECT_ID'
-    CLUSTER_NAME = 'hello-cluster'
+    PROJECT_ID = 'dev-monitoring-456712'
+    CLUSTER_NAME = 'autopilot-cluster-1'
     LOCATION = 'us-central1'
     CREDENTIALS_ID = 'gke-credentials'
     DOCKER_IMAGE = "gcr.io/${PROJECT_ID}/people-api"
