@@ -1,9 +1,9 @@
-pipeline {
-    agent {
-        kubernetes {
-            label 'cd-jenkins-agent'
-            defaultContainer 'jnlp'
-            yaml """
+pipeline {                      // <-- Declarative pipeline block
+  agent {                       // <-- Agent definition (Kubernetes pod)
+    kubernetes {
+      label 'cd-jenkins-agent'  // Label used to match the agent pod
+      defaultContainer 'jnlp'   // Which container to run commands in by default
+      yaml """                  // Inline YAML pod template
 apiVersion: v1
 kind: Pod
 spec:
@@ -16,49 +16,16 @@ spec:
     command: ['cat']
     tty: true
 """
-        }
     }
+  }
 
-    environment {
-        PROJECT_ID = 'dev-monitoring-456712'
-        CLUSTER_NAME = 'autopilot-cluster-1'
-        LOCATION = 'us-central1'
-        CREDENTIALS_ID = 'gke-credentials'
-        DOCKER_IMAGE = "gcr.io/${PROJECT_ID}/people-api"
+  stages {                     // <-- Define job stages
+    stage('Test docker-client') {
+      steps {
+        container('docker-client') {
+          sh 'echo Hello from docker-client container'
+        }
+      }
     }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                container('docker-client') {
-                    sh 'docker --version'
-                    sh 'docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .'
-                }
-            }
-        }
-
-        stage('Push to GCR') {
-            steps {
-                container('docker-client') {
-                    withCredentials([file(credentialsId: "${CREDENTIALS_ID}", variable: 'GC_KEY')]) {
-                        sh 'cat ${GC_KEY} | docker login -u _json_key --password-stdin https://gcr.io'
-                        sh 'docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}'
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to GKE') {
-            steps {
-                sh "gcloud container clusters get-credentials ${CLUSTER_NAME} --region ${LOCATION} --project ${PROJECT_ID}"
-                sh "kubectl apply -f deployment.yaml"
-            }
-        }
-    }
+  }
 }
