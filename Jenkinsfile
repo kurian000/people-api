@@ -11,7 +11,7 @@ pipeline {
               - name: jnlp
                 image: jenkins/inbound-agent:3309.v27b_9314fd1a_4-5
                 args: ['\$(JENKINS_SECRET)', '\$(JENKINS_AGENT_NAME)']
-              - name: docker
+              - name: docker-client
                 image: docker:20.10
                 command:
                 - cat
@@ -34,14 +34,14 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                container('docker') {
+                container('docker-client') {
                     sh 'docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .'
                 }
             }
         }
         stage('Push to GCR') {
             steps {
-                container('docker') {
+                container('docker-client') {
                     withCredentials([file(credentialsId: "${CREDENTIALS_ID}", variable: 'GC_KEY')]) {
                         sh 'cat ${GC_KEY} | docker login -u _json_key --password-stdin https://gcr.io'
                         sh 'docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}'
