@@ -1,9 +1,9 @@
-pipeline {                      // <-- Declarative pipeline block
-  agent {                       // <-- Agent definition (Kubernetes pod)
+pipeline {
+  agent {
     kubernetes {
-      label 'cd-jenkins-agent'  // Label used to match the agent pod
-      defaultContainer 'jnlp'   // Which container to run commands in by default
-      yaml """                  // Inline YAML pod template
+      label 'cd-jenkins-agent'
+      defaultContainer 'jnlp'
+      yaml """
 apiVersion: v1
 kind: Pod
 spec:
@@ -19,7 +19,7 @@ spec:
     }
   }
 
-  stages {                     // <-- Define job stages
+  stages {
     stage('Test docker-client') {
       steps {
         container('docker-client') {
